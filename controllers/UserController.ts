@@ -7,7 +7,7 @@ export default class UserController {
     private router: FastifyInstance
 
     connectedUser;
-    users;
+    users: Promise<User[]>;
 
 /*    users = [
         {   id: 0,
@@ -38,8 +38,11 @@ export default class UserController {
 
         // Register routes to handle users
         router.get('/api/users', async (request, reply) => {
-            var result = this.users.map( user => ({ username: user.username}))
-            reply.send(result)
+            var result = userRepository.find({
+                select: ['username']
+            });
+            result.then(values => {  reply.send(values) })
+
         })
 
         router.route({
@@ -88,19 +91,29 @@ export default class UserController {
                 }
             },
             handler: async (request: any, reply) => {
-                const found = this.users.find((user) =>{
-                    return (user.username === request.query.username &&
-                        user.password === request.query.password)
-
-                })
+                const found = userRepository.findOne({
+                    where: {
+                        username: request.query.username,
+                        password: request.query.password
+                    },
+                    select: ['username']
+                });
 
                 if(found !== undefined){
                     let newToken = (Math.random() + 1).toString(36).substring(2)
-                    this.connectedUser = userRepository.update(found.id, found)
+                    found.then(user => {
+                        if((undefined !== user) && (user !== null)){
+                           user.token = newToken;
+                            // @ts-ignore
+                            this.connectedUser = userRepository.update(user.id, user );
+                        }
+
+                    })
+
 
                     reply.send({
-                        username: found.username,
-                        token: newToken
+                        username:  this.connectedUser.username,
+                        token:  this.connectedUser.token
                     })
                 }
 

@@ -15,27 +15,30 @@ import {AppDataSource} from "./app-data-source";
 
 
 (async function main() {
+
     AppDataSource
         .initialize()
         .then(() => {
             console.log("Data Source has been initialized!")
+            // Init Fastify router
+            const http = new HttpGateway()
+
+            // Controllers
+            new ExampleController(http.router)
+            new HealthcheckController(http.router)
+            new EasterEggController(http.router)
+            new UserController(http.router)
+            new GithubController(http.router)
+
+            // Fastify router start
+            http.start()
         })
         .catch((err) => {
             console.error("Error during Data Source initialization:", err)
         })
 
-    // Init Fastify router
-    const http = new HttpGateway()
 
-    // Controllers
-    new ExampleController(http.router)
-    new HealthcheckController(http.router)
-    new EasterEggController(http.router)
-    new UserController(http.router)
-    new GithubController(http.router)
 
-    // Fastify router start
-    await http.start()
 
 
 

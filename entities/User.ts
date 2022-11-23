@@ -12,7 +12,7 @@ export class User {
     password: string
 
     @Column()
-    token: string | undefined
+    token!: string
 
     @Column()
     logged: boolean = false
