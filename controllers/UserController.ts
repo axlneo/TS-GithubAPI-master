@@ -1,13 +1,15 @@
 import {FastifyInstance} from "fastify";
 import httpErrors from 'http-errors'
-
+import {User} from "../entities/User";
+import {AppDataSource} from "../app-data-source";
 export default class UserController {
 
     private router: FastifyInstance
 
     connectedUser;
+    users;
 
-    users = [
+/*    users = [
         {   id: 0,
             username: 'Axel',
             password: 'P@55w0rd',
@@ -27,10 +29,12 @@ export default class UserController {
             token: 'secret'
         }
 
-    ]
+    ]*/
 
     constructor(router: FastifyInstance) {
         this.router = router
+        const userRepository = AppDataSource.getRepository(User);
+        this.users = userRepository.find();
 
         // Register routes to handle users
         router.get('/api/users', async (request, reply) => {
@@ -55,15 +59,11 @@ export default class UserController {
                 }
             },
             handler: async (request: any, reply) => {
-                const newUserId = this.users.length
-                const newUser = {
-                    id: newUserId,
-                    username: request.query.username,
-                    password: request.query.password,
-                    logged: false,
-                    token: (Math.random() + 1).toString(36).substring(2)
-                }
-                this.users.push(newUser)
+
+                const newUser = new User(request.query.username, request.query.password);
+                newUser.token = (Math.random() + 1).toString(36).substring(2);
+
+                userRepository.save(newUser);
                 reply.send({
                     username: newUser.username,
                     token: newUser.token
@@ -96,9 +96,8 @@ export default class UserController {
 
                 if(found !== undefined){
                     let newToken = (Math.random() + 1).toString(36).substring(2)
-                    found.token = newToken //update user set in DB
-                    found.logged = true  //update user set in DB
-                    this.connectedUser = found
+                    this.connectedUser = userRepository.update(found.id, found)
+
                     reply.send({
                         username: found.username,
                         token: newToken
