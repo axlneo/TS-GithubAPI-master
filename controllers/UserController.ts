@@ -60,11 +60,10 @@ export default class UserController {
                     id: newUserId,
                     username: request.query.username,
                     password: request.query.password,
-                    logged: true, //conected when registered
+                    logged: false,
                     token: (Math.random() + 1).toString(36).substring(2)
                 }
                 this.users.push(newUser)
-                this.connectedUser = newUser //connected when registered
                 reply.send({
                     username: newUser.username,
                     token: newUser.token
@@ -124,16 +123,6 @@ export default class UserController {
                 }
             },
             handler: async (request: any, reply) => {
-                /*const found = this.users.find((user) =>{
-                    return (user.token === request.query.token)
-
-                })
-
-                if(found !== undefined){
-                    reply.send({
-                        username: found.username
-                    })
-                }*/
 
                 if(this.connectedUser.token === request.query.token){
                     reply.send({

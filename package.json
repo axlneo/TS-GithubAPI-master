@@ -13,6 +13,7 @@
   },
   "author": "Appstud",
   "dependencies": {
+    "@octokit/rest": "^19.0.5",
     "axios": "^0.20.0",
     "fastify": "^3.2.1",
     "http-errors": "^2.0.0"
